@@ -1,5 +1,9 @@
+const { MessageMedia } = require('whatsapp-web.js');
+const axios = require('axios');
+
 class Bot {
-	constructor () {
+	constructor (client) {
+		this.client = client;
 		this.username = process.env.IMGFLIP_USERNAME;
 		this.password = process.env.IMGFLIP_PASSWORD;
 		this.memesID = {
@@ -23,7 +27,7 @@ class Bot {
 		return str.charAt(0).toUpperCase() + str.slice(1)
 	}
 
-	help () {
+	help (message) {
 		let help = [
 			'Ejemplo: !meme drake "Bot de banderas" "Bot de memes"',
 			'',
@@ -44,8 +48,8 @@ class Bot {
 		
 		let formattedHelp = '';
 
-		help.map(helpLine => helpFormatted += helpLine + '\n')
-		client.sendMessage(message.from, formattedHelp)
+		help.map(helpLine => formattedHelp += helpLine + '\n')
+		this.client.sendMessage(message.from, formattedHelp)
 	}
 
 	generateMeme (commandMsg) {
