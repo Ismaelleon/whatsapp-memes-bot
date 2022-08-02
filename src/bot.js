@@ -1,4 +1,9 @@
 const { MessageMedia } = require('whatsapp-web.js');
+const FakeYou = require('fakeyou.js');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+const path = require('path');
+const fs = require('fs');
 const axios = require('axios');
 
 class Bot {
@@ -6,6 +11,10 @@ class Bot {
 		this.client = client;
 		this.username = process.env.IMGFLIP_USERNAME;
 		this.password = process.env.IMGFLIP_PASSWORD;
+		this.fy = new FakeYou.Client({
+			usernameOrEmail: process.env.FAKEYOU_USERNAME,
+			password: process.env.FAKEYOU_PASSWORD
+		});
 		this.memesID = {
 			Drake: '181913649',
 			Twobuttons: '87743020',
@@ -17,10 +26,14 @@ class Bot {
 			Epichandshake: '135256802',
 			Sadpabloescobar: '80707627',
 			Alwayshasbeen: '252600902',
-			GuyHoldingCardboard: '216951317',
+			Guyholdingcardboard: '216951317',
 			Monkeypuppet: '148909805',
 			Therock: '21735'
 		};
+	}
+
+	async init () {
+		await this.fy.start()
 	}
 
 	capitalize (str) {
@@ -50,6 +63,30 @@ class Bot {
 
 		help.map(helpLine => formattedHelp += helpLine + '\n')
 		this.client.sendMessage(message.from, formattedHelp)
+	}
+
+	async generateAudio (voice, text, commandMsg) {
+		try {
+			await this.fy.makeTTS(voice, text)
+
+			let model = this.fy.searchModel(voice).first();
+
+			if (model) {
+				let res = await model.request(text);
+				let audioURL = 'https://storage.googleapis.com/vocodes-public';
+
+				await exec(`ffmpeg -i ${audioURL + res.audioPath} -vn -ar 44100 -ac 2 -b:a 192k audio.mp3`)
+
+				const media = MessageMedia.fromFilePath(path.join(__dirname, 'audio.mp3'));
+				commandMsg.reply(media)
+
+				fs.unlink(path.join(__dirname, 'audio.mp3'), (err) => {
+					if (err) throw err
+				})
+			}
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	generateMeme (commandMsg) {
