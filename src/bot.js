@@ -68,15 +68,15 @@ class Bot {
 			text0 = memeTexts[0],
 			text1 = memeTexts[1];
 
-		let formattedURL = `https://api.imgflip.com/caption_image?template_id=${templateID}&username=${this.username}&password=${this.password}&text0=${text0}&text1=${text1}`;
+		let formattedURL = `https://api.imgflip.com/caption_image?template_id=${templateID}&username=${this.username}&password=${this.password}&text0=${text0}`;
+
+		if (text1 !== undefined) {
+			formattedURL += `&text1=${text1}`;
+		}
 
 		axios.post(formattedURL)
 		.then(async res => {
-			const imageRes = await axios.get(res.data.data.url, { responseType: 'arraybuffer' });
-
-			let base64Image = Buffer.from(imageRes.data, 'binary').toString('base64');
-			let media = new MessageMedia('image/png', base64Image);
-
+			const media = await MessageMedia.fromUrl(res.data.data.url);
 			commandMsg.reply(media)
 		}).catch(error => console.log(error))
 	}
