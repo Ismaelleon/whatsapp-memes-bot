@@ -20,6 +20,9 @@ npm install
 ```sh
 export IMGFLIP_USERNAME=yourusername
 export IMGFLIP_PASSWORD=yourpassword
+export FAKEYOU_USERNAME=yourusername
+export FAKEYOU_PASSWORD=yourpassword
+export PEXELS_API_KEY=yourpexelsapikey
 ```
 
 4. Start server and scan the qr code with whatsapp app
