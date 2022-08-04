@@ -1,4 +1,5 @@
 const { MessageMedia } = require('whatsapp-web.js');
+const { createClient } = require('pexels');
 const FakeYou = require('fakeyou.js');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
@@ -15,6 +16,7 @@ class Bot {
 			usernameOrEmail: process.env.FAKEYOU_USERNAME,
 			password: process.env.FAKEYOU_PASSWORD
 		});
+		this.pexelsClient = createClient(process.env.PEXELS_API_KEY);
 		this.memesID = {
 			Drake: '181913649',
 			Twobuttons: '87743020',
@@ -87,6 +89,23 @@ class Bot {
 		} catch (error) {
 			console.log(error)
 		}
+	}
+
+	generateImage (commandMsg) {
+		let query = commandMsg.body.split(' ').slice(1).join(' ');
+		let url = `https://api.pexels.com/v1/search?query=${query}&per_page=15`;
+
+		axios.get(url, {
+			headers: {
+				authorization: process.env.PEXELS_API_KEY
+			}
+		}).then(async res => {
+			let imageIndex = Math.floor(Math.random() * res.data.photos.length - 1);
+			if (res.data.photos.length > 0) {
+				const media = await MessageMedia.fromUrl(res.data.photos[imageIndex].src.medium);
+				commandMsg.reply(media)
+			}
+		})
 	}
 
 	generateMeme (commandMsg) {
