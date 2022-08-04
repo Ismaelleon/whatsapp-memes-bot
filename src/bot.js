@@ -42,25 +42,58 @@ class Bot {
 		return str.charAt(0).toUpperCase() + str.slice(1)
 	}
 
-	help (message) {
-		let help = [
-			'Ejemplo: !meme drake "Bot de banderas" "Bot de memes"',
-			'',
-			'memes: ',
-			'- drake',
-			'- twobuttons',
-			'- onedoesnotsimply',
-			'- changemymind',
-			'- distractedboyfriend',
-			'- unodrawcards',
-			'- buffyvscheems',
-			'- sadpabloescobar',
-			'- alwayshasbeen',
-			'- guyholdingcardboard',
-			'- monkeypuppet',
-			'- therock'
-		];
-		
+	help (message, type) {
+		let help = [];
+		if (type === '') {
+			help = [
+				'Whatsapp bot - made by Ismael',
+				'',
+				'Commands:',
+				'!help - Display help',
+				'!meme - Generate a meme',
+				'!audio - Generate an audio',
+				'!image - Display an image'
+			];
+		} else if (type === 'meme') {
+			help = [
+				' !meme drake "creating branches" "working on master"',
+				'',
+				'memes: ',
+				'- drake',
+				'- twobuttons',
+				'- onedoesnotsimply',
+				'- changemymind',
+				'- distractedboyfriend',
+				'- unodrawcards',
+				'- buffyvscheems',
+				'- sadpabloescobar',
+				'- alwayshasbeen',
+				'- guyholdingcardboard',
+				'- monkeypuppet',
+				'- therock',
+				'',
+				'Uses imgflip API: https://imgflip.com/api'
+			];
+		} else if (type === 'audio') {
+			help = [
+				' !audio trump "china china china"',
+				'',
+				'voices: ',
+				'auronplay',
+				'illojuan',
+				'luisito comunica',
+				'mariano',
+				'',
+				'List of all voices available in https://fakeyou.com'
+			];
+		} else if (type === 'image') {
+			help = [
+				' !image "landscape"',
+				'',
+				'Uses Pexels API: https://api.pexels.com'
+			];
+		}
+			
 		let formattedHelp = '';
 
 		help.map(helpLine => formattedHelp += helpLine + '\n')
@@ -135,6 +168,28 @@ class Bot {
 			const media = await MessageMedia.fromUrl(res.data.data.url);
 			commandMsg.reply(media)
 		}).catch(error => console.log(error))
+	}
+
+	run (message) {
+		let command = message.body.split(' ')[0];
+
+		if (command === '!help') {
+			let commandParam = '';
+			if (message.body.split(' ').length > 1) {
+				commandParam = message.body.split(' ')[1];
+			}
+
+			this.help(message, commandParam)
+		} else if (command === '!meme') {
+			this.generateMeme(message)
+		} else if (command === '!audio') {
+			let voice = message.body.split('"')[0].slice(7, -1),
+				text = message.body.split('"')[1];
+
+			this.generateAudio(voice, text, message)
+		} else if (command === '!image') {
+			this.generateImage(message)
+		}
 	}
 }
 
