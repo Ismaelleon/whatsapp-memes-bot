@@ -1,5 +1,10 @@
 # Whatsapp Memes Bot
 
+### Features (commands between parenthesis)
+ - Audio generation using [Fakeyou](https://fakeyou.com) (!audio)
+ - Displaying images from [Pexels](https://pexels.com) (!image)
+ - Generating memes with [ImgFlip](https://imgflip.com) (!meme)
+
 ### Prerequisites
  - [Node.js](https://nodejs.org)
  - [MongoDB](https://mongodb.com)
