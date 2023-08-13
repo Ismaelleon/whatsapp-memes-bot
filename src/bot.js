@@ -1,6 +1,5 @@
 const { MessageMedia } = require('whatsapp-web.js');
 const { createClient } = require('pexels');
-const FakeYou = require('fakeyou.js');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const path = require('path');
@@ -12,10 +11,6 @@ class Bot {
 		this.client = client;
 		this.username = process.env.IMGFLIP_USERNAME;
 		this.password = process.env.IMGFLIP_PASSWORD;
-		this.fy = new FakeYou.Client({
-			usernameOrEmail: process.env.FAKEYOU_USERNAME,
-			password: process.env.FAKEYOU_PASSWORD
-		});
 		this.pexelsClient = createClient(process.env.PEXELS_API_KEY);
 		this.memesID = {
 			Drake: '181913649',
@@ -34,10 +29,6 @@ class Bot {
 		};
 	}
 
-	async init () {
-		await this.fy.start()
-	}
-
 	capitalize (str) {
 		return str.charAt(0).toUpperCase() + str.slice(1)
 	}
@@ -51,7 +42,7 @@ class Bot {
 				'Commands:',
 				'!help - Display help',
 				'!meme - Generate a meme',
-				'!audio - Generate an audio',
+				//'!audio - Generate an audio',
 				'!image - Display an image'
 			];
 		} else if (type === 'meme') {
@@ -74,18 +65,6 @@ class Bot {
 				'',
 				'Uses imgflip API: https://imgflip.com/api'
 			];
-		} else if (type === 'audio') {
-			help = [
-				' !audio trump "china china china"',
-				'',
-				'voices: ',
-				'auronplay',
-				'illojuan',
-				'luisito comunica',
-				'mariano',
-				'',
-				'List of all voices available in https://fakeyou.com'
-			];
 		} else if (type === 'image') {
 			help = [
 				' !image "landscape"',
@@ -98,30 +77,6 @@ class Bot {
 
 		help.map(helpLine => formattedHelp += helpLine + '\n')
 		this.client.sendMessage(message.from, formattedHelp)
-	}
-
-	async generateAudio (voice, text, commandMsg) {
-		try {
-			await this.fy.makeTTS(voice, text)
-
-			let model = this.fy.searchModel(voice).first();
-
-			if (model) {
-				let res = await model.request(text);
-				let audioURL = 'https://storage.googleapis.com/vocodes-public';
-
-				await exec(`ffmpeg -i ${audioURL + res.audioPath} -vn -ar 44100 -ac 2 -b:a 192k audio.mp3`)
-
-				const media = MessageMedia.fromFilePath(path.join(__dirname, 'audio.mp3'));
-				commandMsg.reply(media)
-
-				fs.unlink(path.join(__dirname, 'audio.mp3'), (err) => {
-					if (err) throw err
-				})
-			}
-		} catch (error) {
-			console.log(error)
-		}
 	}
 
 	generateImage (commandMsg) {
@@ -182,11 +137,6 @@ class Bot {
 			this.help(message, commandParam)
 		} else if (command === '!meme') {
 			this.generateMeme(message)
-		} else if (command === '!audio') {
-			let voice = message.body.split('"')[0].slice(7, -1),
-				text = message.body.split('"')[1];
-
-			this.generateAudio(voice, text, message)
 		} else if (command === '!image') {
 			this.generateImage(message)
 		}

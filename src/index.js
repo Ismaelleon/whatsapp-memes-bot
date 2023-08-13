@@ -11,7 +11,6 @@ const client = new Client({
 });
 
 const bot = new Bot(client);
-bot.init()
 
 client.on('qr', qr => {
 	qrcode.generate(qr, { small: true })
