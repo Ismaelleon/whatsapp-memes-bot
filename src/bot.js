@@ -42,8 +42,8 @@ class Bot {
 				'Commands:',
 				'!help - Display help',
 				'!meme - Generate a meme',
-				//'!audio - Generate an audio',
-				'!image - Display an image'
+				'!image - Display an image',
+				'!weather - Get weather data'
 			];
 		} else if (type === 'meme') {
 			help = [
@@ -70,6 +70,17 @@ class Bot {
 				' !image "landscape"',
 				'',
 				'Uses Pexels API: https://api.pexels.com'
+			];
+		} else if (type === 'weather') {
+			help = [
+				'!weather Montevideo',
+				'',
+				'Response example:',
+				'',
+				'Weather in Montevideo:',
+				'Temperature: 11C',
+				'Humidity: 42%',
+				'Wind Speed: 7Km/h'
 			];
 		}
 			
@@ -125,6 +136,34 @@ class Bot {
 		}).catch(error => console.log(error))
 	}
 
+	getWeather (message, location) {
+		let lat;
+		let lon;
+
+		axios.get(`http://api.openweathermap.org/geo/1.0/direct?q=${location}&appid=${process.env.OPENWEATHER_API_KEY}`)
+		.then(async res => {
+			lat = res.data[0].lat;
+			lon = res.data[0].lon;
+
+
+			axios.get(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&units=metric&appid=d4f5cbc377f7e0122cf372b955829276`)
+			.then(async res => {
+				let { temp, humidity, wind_speed } = res.data.current;
+				
+				let response = `Weather in ${location}:\nTemperature: ${temp}C\nHumidity: ${humidity}%\nWind Speed: ${wind_speed}Km/h`;
+				
+				this.client.sendMessage(message.from, response)
+			})
+			.catch (error => {
+				console.log(error);
+			});
+		})
+		.catch((error) => {
+			console.log(error);
+		});
+
+	}
+
 	run (message) {
 		let command = message.body.split(' ')[0];
 
@@ -139,6 +178,16 @@ class Bot {
 			this.generateMeme(message)
 		} else if (command === '!image') {
 			this.generateImage(message)
+		} else if (command === '!weather') {
+			let location;
+
+			if (message.body.split(' ').length > 1) {
+				location = message.body.split(' ')[1];
+				this.getWeather(message, location);
+			} else {
+				this.client.sendMessage(message.from, 'Invalid location, use "!help weather" for help');
+			}
+
 		}
 	}
 }
